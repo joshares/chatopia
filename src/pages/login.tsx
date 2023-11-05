@@ -18,7 +18,7 @@ export default function Login() {
 
   return (
     <main className="flex md:flex-row flex-col h-screen">
-      <Logo />
+      {/* <Logo /> */}
       <div className="w-full md:w-1/2 h-screen pt-0 md:block hidden">
         <Image src={girl} alt="img" className="w-full h-full object-cover" />
       </div>

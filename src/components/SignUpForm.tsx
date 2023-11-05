@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-// import { signIn } from "next-auth/react";
 import { useRouter } from "next/router";
 import { BiHide, BiShow } from "react-icons/bi";
 import { useFormik } from "formik";
 import { registerSchema } from "../schema";
 import FormErrors from "./FormErrors";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import Congratulations from "./SuccessPromt";
 // import { toast } from "react-toastify";
 
 export interface InputErros {
@@ -19,8 +22,9 @@ type initialValuesTypes = {
 };
 
 export default function SignUpForm() {
+  const [isOpen, setIsOpen] = useState(false);
   const [load, setLoad] = useState(false);
-  const [data, setData] = useState({
+  const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
@@ -40,27 +44,63 @@ export default function SignUpForm() {
   //   const options = {
   //     method: "POST",
   //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify(data),
+  //     body: JSON.stringify(formData),
   //   };
 
   //   await fetch("api/auth/signup", options)
   //     .then((res) => res.json())
-  //     .then((data) => {
-  //       if (data.error) {
-  //         setSubmitError(data.error);
+  //     .then((formData) => {
+  //       if (formData.error) {
+  //         setSubmitError(formData.error);
   //       }
-  //       if (data.success) {
+  //       if (formData.success) {
   //         router.push("/login");
   //       }
   //     });
   // };
 
+  useEffect(() => {
+    localStorage.removeItem("User");
+  }, []);
+
+  const { mutate: submit, isPending } = useMutation({
+    mutationFn: async () => {
+      setSubmitError("");
+      const { data } = await axios.post(
+        "http://localhost:5000/api/users/register",
+        formData
+      );
+      return data as any;
+    },
+    onError: (err: any) => {
+      let error = "";
+      if (err.response.data.length > 1) {
+        error = err.response.data;
+      } else if (err.response.statusText.length > 1) {
+        error = err.response.statusText;
+      } else {
+        error = "Error, try to reload page";
+      }
+
+      setSubmitError(error);
+      console.log(err, submitError);
+    },
+    onSuccess: (data) => {
+      localStorage.setItem("User", JSON.stringify(data));
+      setIsOpen(true);
+      setSubmitError("");
+      console.log(data);
+    },
+  });
+
   const onSubmit = () => {
-    console.log("hi");
+    // console.log(formData);
+    // e.preventDefault();
+    submit();
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setData({ ...data, [event.target.name]: event.target.value });
+    setFormData({ ...formData, [event.target.name]: event.target.value });
   };
   const {
     values,
@@ -72,36 +112,42 @@ export default function SignUpForm() {
     errors,
   } = useFormik({
     initialValues: {
-      email: data.email,
-      password: data.password,
-      confirmPassword: data.confirmPassword,
-      fullName: data.username,
+      email: formData.email,
+      password: formData.password,
+      confirmPassword: formData.confirmPassword,
+      username: formData.username,
     },
     validationSchema: registerSchema,
     onSubmit,
   });
 
+  function closeModal() {
+    setIsOpen(false);
+    router.push("/login");
+  }
+
   return (
-    <form className="grid gap-3 w-full" onSubmit={handleSubmit}>
+    <form className="grid gap-3 w-full relative" onSubmit={handleSubmit}>
+      {isOpen && <Congratulations isOpen={isOpen} closeModal={closeModal} />}
       <div className=" relative border border-transparent border-b-gray-500">
         <input
           type="text"
           name="username"
-          value={values.fullName}
+          value={values.username}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             handleInputChange(e);
             handleChange(e);
           }}
           onBlur={handleBlur}
           className={`${
-            errors.fullName && touched.fullName
+            errors.username && touched.username
               ? "w-full py-1.5 pl-3 placeholder:font-thin outline-none border border-red-800"
               : "w-full py-1.5 pl-3 placeholder:font-thin outline-none"
           }`}
           placeholder="Username"
         />
-        {errors.fullName && touched.fullName && (
-          <FormErrors error={errors.fullName} />
+        {errors.username && touched.username && (
+          <FormErrors error={errors.username} />
         )}
       </div>
       <div className=" relative border border-transparent border-b-gray-500">
@@ -185,9 +231,11 @@ export default function SignUpForm() {
       <div className="w-full mx-auto my-8">
         <button
           type="submit"
-          className="py-2  text-lg font-medium bg-primary text-white rounded-md bg-secondary w-full"
+          className={`${
+            isPending && "animate-pulse opacity-50"
+          } py-2  text-lg font-medium bg-primary text-white rounded-md bg-secondary w-full `}
         >
-          sign up
+          sign
         </button>
 
         <p className="text-center mt-5 my-2 uppercase font-bold text-2xl">or</p>

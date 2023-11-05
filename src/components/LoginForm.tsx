@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import Link from "next/link";
-// import { signIn } from "next-auth/react";
 import { useRouter } from "next/router";
 import { BiHide, BiShow } from "react-icons/bi";
 import { useFormik } from "formik";
 import { loginSchema } from "../schema";
 import FormErrors from "./FormErrors";
-// import { toast } from "react-toastify";
+import { useMutation } from "@tanstack/react-query";
+import { useStore } from "@/store";
+import axios from "axios";
 
 type initialValuesTypes = {
   email: string;
@@ -15,42 +16,52 @@ type initialValuesTypes = {
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState<string>("");
-  const [load, setload] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const addUser = useStore((store) => store.addUser);
 
-  const [password, setPassword] = useState("");
   const router = useRouter();
   const [submitError, setSubmitError] = useState("");
 
-  const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(event.target.value);
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [event.target.name]: event.target.value });
   };
 
-  const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(event.target.value);
-  };
+  const { mutate: login, isPending } = useMutation({
+    mutationFn: async () => {
+      setSubmitError("");
+      const { data } = await axios.post(
+        "http://localhost:5000/api/users/login",
+        formData
+      );
+      return data as any;
+    },
+    onError: (err: any) => {
+      let error = "";
+      if (err.response.statusText.length > 1) {
+        error = err.response.statusText;
+      } else if (err.response.data.length > 1) {
+        error = err.response.data;
+      } else {
+        error = "Error, try to reload page";
+      }
 
-  // const onSubmit = async (values: initialValuesTypes) => {
-  //   setload(true);
-  //   try {
-  //     // const loginRes = await signIn("credentials", {
-  //       redirect: false,
-  //       email: email,
-  //       password: password,
-  //     });
-  //     if (loginRes && !loginRes.ok) {
-  //       setSubmitError(loginRes.error || "");
-  //     } else {
-  //       router.push("/");
-  //     }
-  //   } catch (error) {
-  //     setload(false);
-  //     console.log(error);
-  //   }
-  // };
+      setSubmitError(error);
+      console.log(err, submitError);
+    },
+    onSuccess: (data) => {
+      localStorage.setItem("User", JSON.stringify(data));
+      addUser(data?.data?.user);
+      router.push("/");
+      setSubmitError("");
+      console.log(data?.data);
+    },
+  });
 
   const onSubmit = () => {
-    console.log("yes");
+    login();
   };
 
   const {
@@ -63,8 +74,8 @@ export default function LoginForm() {
     errors,
   } = useFormik({
     initialValues: {
-      email: email,
-      password: password,
+      email: formData.email,
+      password: formData.password,
     },
     validationSchema: loginSchema,
     onSubmit,
@@ -78,7 +89,7 @@ export default function LoginForm() {
           name="email"
           value={values.email}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            handleEmailChange(e);
+            handleInputChange(e);
             handleChange(e);
           }}
           onBlur={handleBlur}
@@ -97,7 +108,7 @@ export default function LoginForm() {
           name="password"
           value={values.password}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            handlePasswordChange(e);
+            handleInputChange(e);
             handleChange(e);
           }}
           onBlur={handleBlur}
@@ -131,7 +142,7 @@ export default function LoginForm() {
           type="submit"
           className="py-2  text-lg font-medium bg-primary text-white rounded-md bg-secondary w-full"
         >
-          {load ? "loading..." : "Login"}
+          {isPending ? "loading..." : "Login"}
         </button>
         {submitError && (
           <p className="text-rose-500 text-sm font-medium mx-auto text-center">

@@ -31,3 +31,12 @@ body {
 .preloader.closed {
   transform: translate(0, 0);
 }
+.max-height {
+  height: calc(100vh - 80px);
+}
+.chats-max-height {
+  height: calc(100vh - 160px);
+}
+::-webkit-scrollbar {
+  width: 0px; /* Width of the scrollbar */
+}
