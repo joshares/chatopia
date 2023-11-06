@@ -4,7 +4,6 @@ import Logo from "@/components/Logo";
 // import { protectRoutes } from "../../authorization/Authorization";
 import { GetServerSidePropsContext } from "next";
 import Layout from "../../Layout";
-import ChatList from "@/components/ChatList";
 import Chat from "@/components/Chat";
 import useFetch from "@/hooks/home/useChat";
 import { useStore } from "@/store";
@@ -14,6 +13,7 @@ const inter = Inter({ subsets: ["latin"] });
 export default function Home() {
   const id = useStore((store) => store.user._id);
   const addChatList = useStore((store) => store.addChatList);
+  const addChats = useStore((store) => store.addChats);
 
   const url = `http://localhost:5000/api/chats/${id}`;
   const { data, error, isError, isFetching, isLoading, isFetched } =
@@ -28,6 +28,8 @@ export default function Home() {
   }
 
   if (isFetched) {
+    console.log(data);
+    addChats(data);
     addChatList(data, id);
   }
   return (

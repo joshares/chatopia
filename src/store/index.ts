@@ -1,17 +1,16 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
+import { ChatType } from "@/types";
 
-// interface User {
-
-// }
-// type AddtaskProp = {
-//   <title></title>
-// }
 type Store = {
   user: any;
+  chats: ChatType[];
+  singleChat: ChatType;
   addUser: (data: any) => void;
+  addChats: (data: any[]) => void;
   chatList: string[];
-  addChatList: (data: any, id: string) => void;
+  addChatList: (data: ChatType[], id: string) => void;
+  addSingleChat: (data: ChatType) => void;
 };
 
 export const useStore = create<Store>()(
@@ -19,17 +18,34 @@ export const useStore = create<Store>()(
     persist(
       (set) => ({
         user: {},
-        addUser: (data: any) => {
+        chats: [],
+        singleChat: {
+          createdAt: "",
+          members: [""],
+          updatedAt: "",
+          __v: 0,
+          _id: "",
+        },
+        addUser: (data) => {
           set((store) => ({
             user: data,
+          }));
+        },
+        addSingleChat: (data) => {
+          set((store) => ({
+            singleChat: data,
+          }));
+        },
+        addChats: (data: any[]) => {
+          set((store) => ({
+            chats: data,
           }));
         },
         chatList: [],
         addChatList: (data, id) => {
           set((store) => {
-            const targetId = store.user.id;
+            const newChats = data;
             const list = [];
-
             for (const obj of data) {
               if (Array.isArray(obj.members)) {
                 for (const recipient of obj.members) {
@@ -39,8 +55,9 @@ export const useStore = create<Store>()(
                 }
               }
             }
-
-            return { chatList: list };
+            return {
+              chatList: list,
+            };
           });
         },
       }),
@@ -48,16 +65,3 @@ export const useStore = create<Store>()(
     )
   )
 );
-
-// type Task = {
-//   title: string;
-//   state: string;
-// };
-
-// type StoreState = {
-//   tasks: Task[];
-// };
-
-// type StoreActions = {
-//   set: SetState<StoreState>;
-// };

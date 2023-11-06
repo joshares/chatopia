@@ -3,11 +3,17 @@ import React, { useState } from "react";
 import ChatList from "./ChatList";
 import ChatBox from "./ChatBox";
 import { useStore } from "@/store";
+import useFetchMessage from "@/hooks/home/useMessage";
+
+const messageUrl =
+  "http://localhost:5000/api/messages/65453354cb93743ed5fe0071";
 
 export default function Chat() {
   const [showChats, setShowChats] = useState(false);
   const chatList = useStore((store) => store.chatList);
-  console.log(chatList);
+  const chats = useStore((store) => store.chats);
+
+  console.log(chatList, chats);
 
   return (
     <main className=" w-full h-full">

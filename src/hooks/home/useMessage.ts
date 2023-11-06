@@ -2,10 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 
 import axios from "axios";
 
-export default function useFetch(url: string) {
+export default function useFetchMessage(url: string, key: string) {
   console.log(url);
   const { data, isError, isLoading, isFetching, error, isFetched } = useQuery({
-    queryKey: ["chats"],
+    queryKey: [key],
     queryFn: async () => {
       const { data } = await axios.get(url);
       return data as any;
