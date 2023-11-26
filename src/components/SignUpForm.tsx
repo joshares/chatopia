@@ -9,7 +9,6 @@ import FormErrors from "./FormErrors";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import Congratulations from "./SuccessPromt";
-// import { toast } from "react-toastify";
 
 export interface InputErros {
   [key: string]: string;
@@ -20,6 +19,8 @@ type initialValuesTypes = {
   confirmPassword: string;
   fullName: string;
 };
+
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function SignUpForm() {
   const [isOpen, setIsOpen] = useState(false);
@@ -38,37 +39,13 @@ export default function SignUpForm() {
 
   const router = useRouter();
 
-  // const onSubmit = async (values: initialValuesTypes) => {
-  //   console.log(values);
-  //   router.push("/login");
-  //   const options = {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify(formData),
-  //   };
-
-  //   await fetch("api/auth/signup", options)
-  //     .then((res) => res.json())
-  //     .then((formData) => {
-  //       if (formData.error) {
-  //         setSubmitError(formData.error);
-  //       }
-  //       if (formData.success) {
-  //         router.push("/login");
-  //       }
-  //     });
-  // };
-
-  useEffect(() => {
-    localStorage.removeItem("User");
-  }, []);
-
   const { mutate: submit, isPending } = useMutation({
     mutationFn: async () => {
       setSubmitError("");
       const { data } = await axios.post(
-        "http://localhost:5000/api/users/register",
-        formData
+        `${baseUrl}/api/users/register`,
+        formData,
+        { withCredentials: true }
       );
       return data as any;
     },
@@ -83,19 +60,15 @@ export default function SignUpForm() {
       }
 
       setSubmitError(error);
-      console.log(err, submitError);
     },
     onSuccess: (data) => {
       localStorage.setItem("User", JSON.stringify(data));
       setIsOpen(true);
       setSubmitError("");
-      console.log(data);
     },
   });
 
   const onSubmit = () => {
-    // console.log(formData);
-    // e.preventDefault();
     submit();
   };
 
@@ -237,8 +210,6 @@ export default function SignUpForm() {
         >
           sign
         </button>
-
-        <p className="text-center mt-5 my-2 uppercase font-bold text-2xl">or</p>
       </div>
     </form>
   );

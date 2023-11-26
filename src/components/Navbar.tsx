@@ -1,3 +1,5 @@
+"use client";
+import React, { useState } from "react";
 import logo from "../../public/logo1.svg";
 import { Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
@@ -5,18 +7,54 @@ import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { AiOutlineSend, AiOutlineUser } from "react-icons/ai";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 
-const navigation = [
-  { name: "Chats", href: "/", current: false },
-  { name: "Friends", href: "/friends", current: false },
-];
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function Navbar() {
+type NavbarProps = {
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setProfile: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+export default function Navbar({ setOpen, setProfile }: NavbarProps) {
+  const [submitError, setSubmitError] = useState("");
   const router = useRouter();
+  const { mutate: logout, isPending } = useMutation({
+    mutationFn: async () => {
+      setSubmitError("");
+      const { data } = await axios.post(
+        `${baseUrl}/api/users/logout`,
+        {},
+        { withCredentials: true }
+      );
+      return data as any;
+    },
+    onError: (err: any) => {
+      let error = "";
+      if (err.response.statusText.length > 1) {
+        error = err.response.statusText;
+      } else if (err.response.data.length > 1) {
+        error = err.response.data;
+      } else {
+        error = "Error, try to reload page";
+      }
+      setSubmitError(error);
+    },
+    onSuccess: (data) => {
+      console.log(data);
+      router.push("/login");
+    },
+  });
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <Disclosure as="nav" className=" bg-primary ">
@@ -42,23 +80,22 @@ export default function Navbar() {
                 </div>
                 <div className="hidden sm:ml-6 sm:block">
                   <div className="flex space-x-4">
-                    {navigation.map((item) => (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        className={classNames(
-                          router.pathname === item.href
-                            ? "bg-blue-900 text-white"
-                            : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                          "rounded-md px-3 py-2 text-sm font-medium"
-                        )}
-                        aria-current={
-                          router.pathname === item.href ? "page" : undefined
-                        }
-                      >
-                        {item.name}
-                      </Link>
-                    ))}
+                    <div
+                      onClick={() => setOpen(false)}
+                      className={classNames(
+                        "bg-blue-900 text-white block rounded-md px-3 py-2 text-base font-medium"
+                      )}
+                    >
+                      chat
+                    </div>
+                    <div
+                      onClick={() => setOpen(true)}
+                      className={classNames(
+                        "text-gray-300 cursor-pointer hover:bg-gray-700 hover:text-white block rounded-md px-3 py-2 text-base font-medium"
+                      )}
+                    >
+                      Colleagues
+                    </div>
                   </div>
                 </div>
               </div>
@@ -78,11 +115,7 @@ export default function Navbar() {
                     <Menu.Button className="relative flex rounded-full bg-primary text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary">
                       <span className="absolute -inset-1.5" />
                       <span className="sr-only">Open user menu</span>
-                      <Image
-                        className="h-8 w-8 rounded-full"
-                        src={logo}
-                        alt=""
-                      />
+                      <AiOutlineUser className="text-xl text-gray-400" />
                     </Menu.Button>
                   </div>
                   <Transition
@@ -96,42 +129,26 @@ export default function Navbar() {
                   >
                     <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <Menu.Item>
-                        {({ active }) => (
-                          <a
-                            href="#"
-                            className={classNames(
-                              active ? "bg-gray-100" : "",
-                              "block px-4 py-2 text-sm text-gray-700"
-                            )}
-                          >
-                            Your Profile
-                          </a>
-                        )}
+                        <div
+                          onClick={() => setProfile(true)}
+                          className={classNames(
+                            "hover:bg-gray-100 block px-4 py-2 text-sm cursor-pointer text-gray-700"
+                          )}
+                        >
+                          Your Profile
+                        </div>
                       </Menu.Item>
                       <Menu.Item>
                         {({ active }) => (
-                          <a
-                            href="#"
-                            className={classNames(
-                              active ? "bg-gray-100" : "",
-                              "block px-4 py-2 text-sm text-gray-700"
-                            )}
-                          >
-                            Settings
-                          </a>
-                        )}
-                      </Menu.Item>
-                      <Menu.Item>
-                        {({ active }) => (
-                          <a
-                            href="#"
+                          <div
+                            onClick={handleLogout}
                             className={classNames(
                               active ? "bg-gray-100" : "",
                               "block px-4 py-2 text-sm text-gray-700"
                             )}
                           >
                             Sign out
-                          </a>
+                          </div>
                         )}
                       </Menu.Item>
                     </Menu.Items>
@@ -143,23 +160,22 @@ export default function Navbar() {
 
           <Disclosure.Panel className="sm:hidden">
             <div className="space-y-1 px-2 pb-3 pt-2">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={classNames(
-                    router.pathname === item.href
-                      ? "bg-blue-900 text-white"
-                      : "text-gray-300 hover-bg-gray-700 hover-text-white",
-                    "block rounded-md px-3 py-2 text-base font-medium"
-                  )}
-                  aria-current={
-                    router.pathname === item.href ? "page" : undefined
-                  }
-                >
-                  {item.name}
-                </Link>
-              ))}
+              <div
+                onClick={() => setOpen(false)}
+                className={classNames(
+                  "bg-blue-900 text-white block rounded-md px-3 py-2 text-base font-medium"
+                )}
+              >
+                chat
+              </div>
+              <div
+                onClick={() => setOpen(true)}
+                className={classNames(
+                  "text-gray-300 cursor-pointer hover:bg-gray-700 hover:text-white block rounded-md px-3 py-2 text-base font-medium"
+                )}
+              >
+                Colleagues
+              </div>
             </div>
           </Disclosure.Panel>
         </>

@@ -8,7 +8,7 @@ type WrapperProps = {
 export default function Layout({ children }: WrapperProps) {
   return (
     <main className="max-h-screen overflow-scroll">
-      <Navbar />
+      {/* <Navbar /> */}
       <div>{children}</div>
     </main>
   );

@@ -14,16 +14,18 @@ type initialValuesTypes = {
   password: string;
 };
 
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-  const addUser = useStore((store) => store.addUser);
+  // const addUser = useStore((store) => store.addUser);
+  const [submitError, setSubmitError] = useState("");
 
   const router = useRouter();
-  const [submitError, setSubmitError] = useState("");
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [event.target.name]: event.target.value });
@@ -33,8 +35,9 @@ export default function LoginForm() {
     mutationFn: async () => {
       setSubmitError("");
       const { data } = await axios.post(
-        "http://localhost:5000/api/users/login",
-        formData
+        `${baseUrl}/api/users/login`,
+        formData,
+        { withCredentials: true }
       );
       return data as any;
     },
@@ -52,8 +55,6 @@ export default function LoginForm() {
       console.log(err, submitError);
     },
     onSuccess: (data) => {
-      localStorage.setItem("User", JSON.stringify(data));
-      addUser(data?.data?.user);
       router.push("/");
       setSubmitError("");
       console.log(data?.data);
@@ -149,9 +150,6 @@ export default function LoginForm() {
             {submitError}
           </p>
         )}
-        <p className="text-center mt-5 my-2 uppercase font-bold text-2xl text-black">
-          or
-        </p>
       </div>
     </form>
   );

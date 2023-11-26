@@ -1,47 +1,46 @@
 import Image from "next/image";
 import { Inter } from "next/font/google";
 import Logo from "@/components/Logo";
-// import { protectRoutes } from "../../authorization/Authorization";
-import { GetServerSidePropsContext } from "next";
-import Layout from "../../Layout";
-import Chat from "@/components/Chat";
-import useFetch from "@/hooks/home/useChat";
+import { useRouter } from "next/router";
 import { useStore } from "@/store";
-
-const inter = Inter({ subsets: ["latin"] });
+import Loading from "@/components/Loading";
+import useFetchUser from "@/hooks/home/useLoginUser";
 
 export default function Home() {
-  const id = useStore((store) => store.user._id);
-  const addChatList = useStore((store) => store.addChatList);
-  const addChats = useStore((store) => store.addChats);
-
-  const url = `http://localhost:5000/api/chats/${id}`;
-  const { data, error, isError, isFetching, isLoading, isFetched } =
-    useFetch(url);
-  console.log(data, error);
+  const {
+    data: user,
+    error,
+    isError,
+    isFetching,
+    isLoading,
+    isFetched,
+  } = useFetchUser();
+  const addUser = useStore((store) => store.addUser);
+  const router = useRouter();
 
   if (isLoading || isFetching) {
-    return <div>loading</div>;
+    return (
+      <main>
+        <Logo />
+        <div>
+          <Loading />
+        </div>
+      </main>
+    );
   }
   if (isError) {
-    return <div>Error reload page</div>;
+    // return <Error />;
+    router.push("/login");
+    return null;
   }
 
   if (isFetched) {
-    console.log(data);
-    addChats(data);
-    addChatList(data, id);
+    addUser(user.user);
+    router.push("/chat");
   }
   return (
-    <Layout>
-      {/* <Logo /> */}
-      <div>
-        <Chat />
-      </div>
-    </Layout>
+    <main>
+      <Logo />
+    </main>
   );
 }
-
-// export async function getServerSideProps(context: GetServerSidePropsContext) {
-//   return protectRoutes(context);
-// }
