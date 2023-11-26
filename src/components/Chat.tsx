@@ -8,9 +8,9 @@ import { io, Socket } from "socket.io-client";
 import Navbar from "./Navbar";
 import Friend from "./Friend";
 import Profile from "./Profile";
-import { useSocket } from "@/hooks/socket/useSocket";
+// import { useSocket } from "@/hooks/socket/useSocket";
 import { useQueryClient } from "@tanstack/react-query";
-import { connectSocket } from "@/hooks/socket/useUserSocket";
+import { connectSocket } from "@/hooks/socket/useSocket";
 
 // const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -33,49 +33,49 @@ export default function Chat() {
   console.log(onlineUsers);
   const newList = chatList.slice().reverse();
 
-  // // // connect users
-  // useEffect(() => {
-  //   connectSocket(setSocket);
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [user]);
+  // // connect users
+  useEffect(() => {
+    connectSocket(setSocket);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
-  // // get onlineUsers
-  // useEffect(() => {
-  //   if (socket === null) return;
-  //   socket.emit("addNewUser", user?._id);
-  //   socket?.on("getOnlineUsers", (res) => {
-  //     addOnlineUsers(res);
-  //     console.log(res);
-  //   });
+  // get onlineUsers
+  useEffect(() => {
+    if (socket === null) return;
+    socket.emit("addNewUser", user?.id);
+    socket?.on("getOnlineUsers", (res) => {
+      addOnlineUsers(res);
+      console.log(res);
+    });
 
-  //   return () => {
-  //     socket?.off("getOnlineUsers");
-  //   };
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [socket]);
+    return () => {
+      socket?.off("getOnlineUsers");
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [socket]);
 
-  // // // // send  and receive message
-  // useEffect(() => {
-  //   if (socket === null) return;
-  //   const recipientId = recipient?._id;
+  // // // send  and receive message
+  useEffect(() => {
+    if (socket === null) return;
+    const recipientId = recipient?._id;
 
-  //   socket.emit("sendMessage", { ...message, recipientId });
-  //   console.log(message);
-  //   socket?.on("getMessage", (res) => {
-  //     queryClient.invalidateQueries({ queryKey: [singleChat._id] });
+    socket.emit("sendMessage", { ...message, recipientId });
+    console.log(message);
+    socket?.on("getMessage", (res) => {
+      queryClient.invalidateQueries({ queryKey: [singleChat._id] });
 
-  //     console.log("oya");
-  //     console.log(res, "and", singleChat?._id);
-  //     if (singleChat?._id !== res.chat) return;
+      console.log("oya");
+      console.log(res, "and", singleChat?._id);
+      if (singleChat?._id !== res.chat) return;
 
-  //     console.log(res);
-  //   });
+      console.log(res);
+    });
 
-  //   return () => {
-  //     socket?.off("getMessage");
-  //   };
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [socket, message]);
+    return () => {
+      socket?.off("getMessage");
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [socket, message]);
 
   // // // // receive message
   // useEffect(() => {
