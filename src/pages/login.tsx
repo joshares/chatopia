@@ -2,10 +2,20 @@ import React from "react";
 import LoginForm from "../components/LoginForm";
 import logo from "../../public/logo.svg";
 import girl from "../../public/textgirl.jpg";
+import { useRouter } from "next/router";
 import Image from "next/image";
 import Link from "next/link";
+import { useStore } from "@/store";
 
 export default function Login() {
+  const user = useStore((store) => store.user);
+  const router = useRouter();
+
+  // if (user) {
+  //   router.push("/chat");
+  //   return null;
+  // }
+
   return (
     <main className="flex md:flex-row flex-col h-screen">
       {/* <Logo /> */}
