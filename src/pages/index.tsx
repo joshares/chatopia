@@ -16,7 +16,6 @@ export default function Home() {
     isFetched,
   } = useFetchUser();
   const addUser = useStore((store) => store.addUser);
-  console.log("what is happeneing");
   const router = useRouter();
 
   if (isLoading || isFetching) {
@@ -30,17 +29,14 @@ export default function Home() {
     );
   }
   if (isError) {
-    console.log(error);
     // return <Error />;
     router.push("/login");
     return null;
   }
 
   if (isFetched) {
-    console.log("fetched");
     addUser(user.user);
     router.push("/chat");
-    return null;
   }
   return (
     <main>
