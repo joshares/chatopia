@@ -29,6 +29,7 @@ export default function Home() {
     );
   }
   if (isError) {
+    console.log(error);
     // return <Error />;
     router.push("/login");
     return null;
