@@ -28,6 +28,11 @@ export default function Chats() {
   if (isFetched && id) {
     addChats(data);
     addChatList(data, id);
+    return (
+      <div>
+        <Chat />
+      </div>
+    );
   }
   return (
     <main>

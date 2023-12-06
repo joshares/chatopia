@@ -40,6 +40,7 @@ export default function Home() {
     console.log("fetched");
     addUser(user.user);
     router.push("/chat");
+    return null;
   }
   return (
     <main>
