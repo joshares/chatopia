@@ -64,6 +64,11 @@ export default function LoginForm() {
   const onSubmit = () => {
     login();
   };
+  const onSubmitDemo = () => {
+    setFormData({ email: "demo@gmail.com", password: "1234567" });
+    // console.log(formData);
+    login();
+  };
 
   const {
     values,
@@ -145,6 +150,22 @@ export default function LoginForm() {
         >
           {isPending ? "loading..." : "Login"}
         </button>
+
+        {submitError && (
+          <p className="text-rose-500 text-sm font-medium mx-auto text-center">
+            {submitError}
+          </p>
+        )}
+      </div>
+      <div className="w-full mx-auto my-8">
+        <button
+          onClick={onSubmitDemo}
+          // type="submit"
+          className="py-2  text-lg font-medium  text-primary rounded-md bg-secondary w-full"
+        >
+          {isPending ? "loading..." : "Login as Demo user"}
+        </button>
+
         {submitError && (
           <p className="text-rose-500 text-sm font-medium mx-auto text-center">
             {submitError}
